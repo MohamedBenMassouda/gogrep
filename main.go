@@ -2,11 +2,22 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
 	"math/rand"
 	"os"
 	"strings"
 )
+
+// TODO: Try to make it more efficient, by reading .gitignore file and ignoring the files in it
+var ignoreDirs = []string{".git", "node_modules", ".vscode", "vendor", ".idea", "build"}
+
+func Contains(arr []string, str string) bool {
+	for _, a := range arr {
+		if a == str {
+			return true
+		}
+	}
+	return false
+}
 
 func checkInPath(path string, input string) {
 	if _, err := os.Stat(path); os.IsNotExist(err) {
@@ -15,45 +26,47 @@ func checkInPath(path string, input string) {
 	}
 
 	file, err := os.Stat(path)
-
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 
 	if file.IsDir() {
-		var listFiles []string = getDirFiles(path)
+		if Contains(ignoreDirs, file.Name()) {
+			return
+		}
+
+		var listFiles []os.FileInfo = getDirFiles(path)
 
 		for _, file := range listFiles {
-			checkInPath(path+"/"+file, input)
+			checkInPath(path+"/"+file.Name(), input)
 		}
 	} else {
-		fmt.Println(getRandomColor() + path)
-		lookInContent(getFileContent(path), input)
+		content := getFileContent(path)
+		if content != "" {
+			fmt.Println(getRandomColor() + path)
+			lookInContent(content, input)
+		}
 	}
 }
 
-func getDirFiles(path string) []string {
-	var files []string
+func getDirFiles(path string) []os.FileInfo {
+	var files []os.FileInfo
 
 	file, err := os.Open(path)
-
 	if err != nil {
 		fmt.Println(err)
 		return files
 	}
 
 	fileInfos, err := file.Readdir(-1)
-
 	if err != nil {
 		fmt.Println(err)
 		return files
 	}
 
 	for _, fileInfo := range fileInfos {
-		if !fileInfo.IsDir() {
-			files = append(files, fileInfo.Name())
-		}
+		files = append(files, fileInfo)
 	}
 
 	return files
@@ -74,8 +87,7 @@ func getRandomColor() string {
 
 // Get file content
 func getFileContent(fileName string) string {
-	fileContent, err := ioutil.ReadFile(fileName)
-
+	fileContent, err := os.ReadFile(fileName)
 	if err != nil {
 		fmt.Println(err)
 		return ""
@@ -96,22 +108,47 @@ func lookInContent(content string, input string) {
 }
 
 func print(text string, input string, lineNumber int) {
+	// if -1 it will highlight all the occurrences
+	// 0 will not highlight any occurrences
+
+	var howManyTimesShouldBeHighlighted int = -1
 	colorReset := "\033[0m"
 
 	// Print the line normally but the input in color
 	tx := getRandomColor() + fmt.Sprint(lineNumber) + colorReset + ":" + text
-	fmt.Println(strings.Replace(tx, input, getRandomColor()+input+colorReset, -1))
+	fmt.Println(strings.Replace(tx, input, getRandomColor()+input+colorReset, howManyTimesShouldBeHighlighted))
 }
 
-func main() {
-	if os.Args[1] == "" {
-		fmt.Println("Please enter a string to search")
+func PrintAllFiles(path string, ignore ...string) {
+	if path == ".git" {
 		return
+	}
+	var listFiles []os.FileInfo = getDirFiles(path)
+
+	for _, file := range listFiles {
+		if file.IsDir() {
+			PrintAllFiles(path + "/" + file.Name())
+		} else {
+			fmt.Println(path + "/" + file.Name())
+		}
+	}
+}
+
+func CheckArgs() string {
+	args := os.Args[1:]
+
+	if len(args) < 1 || args[0] == "" {
+		fmt.Println("Please enter a string to search")
+		os.Exit(0)
+	} else if len(args) > 2 {
+		fmt.Println("Too many arguments")
+		os.Exit(0)
 	}
 
 	var path, _ = os.Getwd()
-	if len(os.Args) > 2 {
-		path = os.Args[2]
+
+	if len(args) > 2 {
+		path = args[2]
 	}
 
 	if path == ".." {
@@ -120,10 +157,15 @@ func main() {
 		path, _ = os.UserHomeDir()
 	}
 
-	// checkInPath(os.Args[1], os.Args[2])
-	var listFiles []string = getDirFiles(path)
+	return path
+}
+
+func main() {
+	path := CheckArgs()
+
+	var listFiles []os.FileInfo = getDirFiles(path)
 
 	for _, file := range listFiles {
-		checkInPath(path+"/"+file, os.Args[1])
+		checkInPath(path+"/"+file.Name(), os.Args[1])
 	}
 }
