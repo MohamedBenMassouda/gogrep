@@ -1,4 +1,5 @@
 # gogrep
+This is an attempt to recreate a part of ripgrep using go
 ## Disclaimer
 ⚠️ I'm making gogrep for learning purposes, both fun and challenging. It's still on a really early stage but we will see what it will become ⚠️
 
