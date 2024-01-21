@@ -22,7 +22,7 @@ Look for the input in the file content inside a directory
 
 ### Installation
 ```
-git clone https://github.com/MohamedBenMassouda/gogrep
+git clone https://github.com/MohamedBenMassouda/gogrep && cd gogrep
 ```
 ```
 go run . "🚀" .
