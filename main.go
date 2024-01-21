@@ -181,21 +181,22 @@ func main() {
 
 		if input != "" {
 			LookInContent("", input, os.Args[1])
-
 		}
+
+		return
 	}
 
-	// path := CheckArgs()
-	// var input string = os.Args[1]
+	path := CheckArgs()
+	var input string = os.Args[1]
 
-	// if file, _ := os.Stat(path); !file.IsDir() {
-	// 	CheckInPath(path, input)
-	// 	return
-	// }
-	//
-	// var listFiles []os.FileInfo = GetDirFiles(path)
-	//
-	// for _, file := range listFiles {
-	// 	CheckInPath(path+"/"+file.Name(), input)
-	// }
+	if file, _ := os.Stat(path); !file.IsDir() {
+		CheckInPath(path, input)
+		return
+	}
+
+	var listFiles []os.FileInfo = GetDirFiles(path)
+
+	for _, file := range listFiles {
+		CheckInPath(path+"/"+file.Name(), input)
+	}
 }
