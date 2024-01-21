@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math/rand"
 	"os"
+	"path/filepath"
 	"strings"
 )
 
@@ -43,11 +44,36 @@ func CheckInPath(path string, input string) {
 			CheckInPath(path+"/"+file.Name(), input)
 		}
 	} else {
+		if isImageOrVideoFile(path) {
+			return
+		}
+
 		content := GetFileContent(path)
 		if content != "" {
 			LookInContent(path, content, input)
 		}
 	}
+}
+
+func isImageOrVideoFile(fileName string) bool {
+	imageExtensions := []string{".jpg", ".jpeg", ".png", ".gif", ".bmp"}
+	videoExtensions := []string{".mp4", ".avi", ".mkv", ".mov", ".wmv"}
+
+	ext := strings.ToLower(filepath.Ext(fileName))
+
+	for _, imgExt := range imageExtensions {
+		if ext == imgExt {
+			return true
+		}
+	}
+
+	for _, vidExt := range videoExtensions {
+		if ext == vidExt {
+			return true
+		}
+	}
+
+	return false
 }
 
 func GetDirFiles(path string) []os.FileInfo {
@@ -141,7 +167,7 @@ func PrintAllFiles(path string, ignore ...string) {
 	}
 }
 
-func CheckArgs() string {
+func CheckArgs() (string, string) {
 	args := os.Args[1:]
 
 	if len(args) < 1 || args[0] == "" {
@@ -158,16 +184,15 @@ func CheckArgs() string {
 		path = args[1]
 	}
 
-	if path == ".." {
-		path = ".."
-	} else if path == "~" {
+	if path == "~" {
 		path, _ = os.UserHomeDir()
 	}
 
-	return path
+	return path, args[0]
 }
 
 func main() {
+	// Check if data is being piped to stdin
 	stat, _ := os.Stdin.Stat()
 
 	if (stat.Mode() & os.ModeCharDevice) == 0 {
@@ -186,8 +211,7 @@ func main() {
 		return
 	}
 
-	path := CheckArgs()
-	var input string = os.Args[1]
+	path, input := CheckArgs()
 
 	if file, _ := os.Stat(path); !file.IsDir() {
 		CheckInPath(path, input)
@@ -199,4 +223,5 @@ func main() {
 	for _, file := range listFiles {
 		CheckInPath(path+"/"+file.Name(), input)
 	}
+
 }
