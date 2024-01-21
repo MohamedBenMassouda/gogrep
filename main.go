@@ -44,8 +44,7 @@ func checkInPath(path string, input string) {
 	} else {
 		content := getFileContent(path)
 		if content != "" {
-			fmt.Println(getRandomColor() + path)
-			lookInContent(content, input)
+			lookInContent(path, content, input)
 		}
 	}
 }
@@ -96,18 +95,25 @@ func getFileContent(fileName string) string {
 	return string(fileContent)
 }
 
-func lookInContent(content string, input string) {
+func lookInContent(path string, content string, input string) {
 	var lineNumber int = 1
+	var shouldPrintPath bool = false
+
 	for _, line := range strings.Split(content, "\n") {
 		if strings.Contains(line, input) {
+			if !shouldPrintPath {
+				fmt.Println(getRandomColor() + path)
+				shouldPrintPath = true
+			}
+
 			// Get the line number
-			print(line, input, lineNumber)
+			Print(line, input, lineNumber)
 		}
 		lineNumber++
 	}
 }
 
-func print(text string, input string, lineNumber int) {
+func Print(text string, input string, lineNumber int) {
 	// if -1 it will highlight all the occurrences
 	// 0 will not highlight any occurrences
 
