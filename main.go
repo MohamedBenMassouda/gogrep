@@ -153,8 +153,8 @@ func CheckArgs() string {
 
 	var path, _ = os.Getwd()
 
-	if len(args) > 2 {
-		path = args[2]
+	if len(args) >= 2 {
+		path = args[1]
 	}
 
 	if path == ".." {
@@ -168,10 +168,16 @@ func CheckArgs() string {
 
 func main() {
 	path := CheckArgs()
+	var input string = os.Args[1]
+
+	if file, _ := os.Stat(path); !file.IsDir() {
+		checkInPath(path, input)
+		return
+	}
 
 	var listFiles []os.FileInfo = getDirFiles(path)
 
 	for _, file := range listFiles {
-		checkInPath(path+"/"+file.Name(), os.Args[1])
+		checkInPath(path+"/"+file.Name(), input)
 	}
 }
