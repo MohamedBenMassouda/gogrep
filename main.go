@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"math/rand"
 	"os"
@@ -19,7 +20,7 @@ func Contains(arr []string, str string) bool {
 	return false
 }
 
-func checkInPath(path string, input string) {
+func CheckInPath(path string, input string) {
 	if _, err := os.Stat(path); os.IsNotExist(err) {
 		fmt.Println("Path does not exist")
 		return
@@ -36,20 +37,20 @@ func checkInPath(path string, input string) {
 			return
 		}
 
-		var listFiles []os.FileInfo = getDirFiles(path)
+		var listFiles []os.FileInfo = GetDirFiles(path)
 
 		for _, file := range listFiles {
-			checkInPath(path+"/"+file.Name(), input)
+			CheckInPath(path+"/"+file.Name(), input)
 		}
 	} else {
-		content := getFileContent(path)
+		content := GetFileContent(path)
 		if content != "" {
-			lookInContent(path, content, input)
+			LookInContent(path, content, input)
 		}
 	}
 }
 
-func getDirFiles(path string) []os.FileInfo {
+func GetDirFiles(path string) []os.FileInfo {
 	var files []os.FileInfo
 
 	file, err := os.Open(path)
@@ -71,7 +72,7 @@ func getDirFiles(path string) []os.FileInfo {
 	return files
 }
 
-func getRandomColor() string {
+func GetRandomColor() string {
 	colorRed := "\033[31m"
 	colorGreen := "\033[32m"
 	colorYellow := "\033[33m"
@@ -85,7 +86,7 @@ func getRandomColor() string {
 }
 
 // Get file content
-func getFileContent(fileName string) string {
+func GetFileContent(fileName string) string {
 	fileContent, err := os.ReadFile(fileName)
 	if err != nil {
 		fmt.Println(err)
@@ -95,14 +96,14 @@ func getFileContent(fileName string) string {
 	return string(fileContent)
 }
 
-func lookInContent(path string, content string, input string) {
+func LookInContent(path string, content string, input string) {
 	var lineNumber int = 1
 	var shouldPrintPath bool = false
 
 	for _, line := range strings.Split(content, "\n") {
 		if strings.Contains(line, input) {
 			if !shouldPrintPath {
-				fmt.Println(getRandomColor() + path)
+				fmt.Println(GetRandomColor() + path)
 				shouldPrintPath = true
 			}
 
@@ -121,15 +122,15 @@ func Print(text string, input string, lineNumber int) {
 	colorReset := "\033[0m"
 
 	// Print the line normally but the input in color
-	tx := getRandomColor() + fmt.Sprint(lineNumber) + colorReset + ":" + text
-	fmt.Println(strings.Replace(tx, input, getRandomColor()+input+colorReset, howManyTimesShouldBeHighlighted))
+	tx := GetRandomColor() + fmt.Sprint(lineNumber) + colorReset + ":" + text
+	fmt.Println(strings.Replace(tx, input, GetRandomColor()+input+colorReset, howManyTimesShouldBeHighlighted))
 }
 
 func PrintAllFiles(path string, ignore ...string) {
 	if path == ".git" {
 		return
 	}
-	var listFiles []os.FileInfo = getDirFiles(path)
+	var listFiles []os.FileInfo = GetDirFiles(path)
 
 	for _, file := range listFiles {
 		if file.IsDir() {
@@ -167,17 +168,34 @@ func CheckArgs() string {
 }
 
 func main() {
-	path := CheckArgs()
-	var input string = os.Args[1]
+	stat, _ := os.Stdin.Stat()
 
-	if file, _ := os.Stat(path); !file.IsDir() {
-		checkInPath(path, input)
-		return
+	if (stat.Mode() & os.ModeCharDevice) == 0 {
+		// data is being piped to stdin
+		scanner := bufio.NewScanner(os.Stdin)
+
+		var input string = ""
+		for scanner.Scan() {
+			input += scanner.Text() + "\n"
+		}
+
+		if input != "" {
+			LookInContent("", input, os.Args[1])
+
+		}
 	}
 
-	var listFiles []os.FileInfo = getDirFiles(path)
+	// path := CheckArgs()
+	// var input string = os.Args[1]
 
-	for _, file := range listFiles {
-		checkInPath(path+"/"+file.Name(), input)
-	}
+	// if file, _ := os.Stat(path); !file.IsDir() {
+	// 	CheckInPath(path, input)
+	// 	return
+	// }
+	//
+	// var listFiles []os.FileInfo = GetDirFiles(path)
+	//
+	// for _, file := range listFiles {
+	// 	CheckInPath(path+"/"+file.Name(), input)
+	// }
 }
