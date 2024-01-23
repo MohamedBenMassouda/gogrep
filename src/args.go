@@ -16,7 +16,7 @@ func CheckArgs() (string, string) {
 		os.Exit(0)
 	}
 
-	var path, _ = os.Getwd()
+	var path = "."
 
 	if len(args) >= 2 {
 		path = args[1]
