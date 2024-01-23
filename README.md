@@ -41,10 +41,19 @@ But I wanted to learn what those tools do under the hood
 ![Piped Input](./assets/piped-input.png)
 
 ## Installation
+### Go
+```bash
+go install github.com/MohamedBenMassouda/gogrep@latest
 ```
+```bash
+$GOPATH/bin/gogrep test
+```
+
+### Git
+```bash
 git clone https://github.com/MohamedBenMassouda/gogrep && cd gogrep
 ```
-```
+```bash
 go run . "🚀" .
 ```
 
