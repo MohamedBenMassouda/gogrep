@@ -43,10 +43,6 @@ func LookInContent(path string, content string, input string) {
 	var lineNumber int = 1
 	var shouldPrintPath bool = false
 
-	if path[0:2] == "./" {
-		path = path[2:]
-	}
-
 	for _, line := range strings.Split(content, "\n") {
 		if strings.Contains(line, input) {
 			if !shouldPrintPath {
