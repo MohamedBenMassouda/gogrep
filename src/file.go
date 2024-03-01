@@ -41,6 +41,8 @@ func GetFileContent(fileName string) string {
 
 func LookInContent(path string, content string, input string) {
 	var lineNumber int = 1
+	// This variable will be used to print the path only once
+	// even if the input is found multiple times in the file
 	var shouldPrintPath bool = false
 
 	for _, line := range strings.Split(content, "\n") {
@@ -55,4 +57,6 @@ func LookInContent(path string, content string, input string) {
 		}
 		lineNumber++
 	}
+
+	// Fmt
 }
